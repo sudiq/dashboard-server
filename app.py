@@ -1,4 +1,7 @@
 from flask import Flask, Request, Response
+
+from .resources.routes import initroutes
+
 from database.db import initdb
 from database.models import Discos
 import json
@@ -11,7 +14,8 @@ app.config['MONGO_SETTINGS'] = {
 }
 
 initdb(app)
+initroutes(app)
 
-@app.route('/')
-def hello():
-    return "playing around"
+
+
+app.run()
