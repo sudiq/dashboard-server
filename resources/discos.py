@@ -6,7 +6,7 @@ from flask_restful import Resource
 class DiscosApi(Resource):
     def get(self):
         discos = Discos.objects().to_json()
-        return Response(discos, mimetype="application/json", status = 200)
+        return Response(discos, mimetyp = "application/json", status = 200)
     def post(self):
         body = request.get_json()
         disco = Discos(**body).save()
@@ -22,7 +22,7 @@ class DiscoApi(Resource):
         return "", 200
     def get(self, name):
         disco = Discos.objects.get(name = name).to_json()
-        return Response(disco, mimetype="application/json", 200)
+        return Response(disco, mimetype = "application/json", status = 200)
         return 
     
       
