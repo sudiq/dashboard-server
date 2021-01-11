@@ -1,31 +1,46 @@
-class InternalServerError(Exception):
+
+from flask_restful import HTTPException
+
+class InternalServerError(HTTPException):
     pass
 
-class SchemaValidationError(Exception):
+class SchemaValidationError(HTTPException):
     pass
 
-class DiscoAlreadyExistsError(Exception):
+class DiscoAlreadyExistsError(HTTPException):
     pass
 
-class UpdatingDiscoError(Exception):
+class UpdatingDiscoError(HTTPException):
     pass
 
-class DeletingDiscoError(Exception):
+class DeletingDiscoError(HTTPException):
     pass
 
-class DiscoNotExistsError(Exception):
+class DiscoNotExistsError(HTTPException):
     pass
 
-class EmailAlreadyExistsError(Exception):
+class EmailAlreadyExistsError(HTTPException):
     pass
-class PermissionError(Exception):
+
+class PermissionError(HTTPException):
     pass
-class EmailNotExistsError(Exception):
+
+class EmailNotExistsError(HTTPException):
     pass
-class UnauthorizedError(Exception):
+
+class UnauthorizedError(HTTPException):
     pass
+
+class BadTokenError(HTTPException):
+    pass
+
+
 
 errors = {
+    "BadTokenError":{
+        "message":"Invalid or expired token",
+        "status":403
+    },
     "InternalServerError": {
         "message": "Something went wrong",
         "status": 500
@@ -62,6 +77,8 @@ errors = {
          "message":"Permission denied",
          "status":401
      },
-     "EmailNotExistsError":
-     {'message': "Invalid user"}
+     "EmailNotExistsError":{
+         'message': "Invalid user",
+         'status':401
+     }
 }

@@ -10,47 +10,61 @@ class UsersApi(Resource):
     @jwt_required
     def get(self):
         try:
-            if get_jwt_claims() != "admin":
+            if get_jwt_claims() not in  ["admin", "super_admin"]:
                 raise PermissionError
             users = Users.objects().to_json()
-            Response(users, mimetype= "application/json", status = 200)
+            return Response(users, mimetype= "application/json", status = 200)
+        except PermissionError:
+            raise PermissionError
         except Exception:
             raise InternalServerError
     @jwt_required
     def post(self):
         try:
-            if get_jwt_claims() != "admin":
+            if get_jwt_claims() not in  ["admin", "super_admin"]:
                 raise PermissionError
             body = request.get_json()
-            user = Users(**body).save()
+            if get_jwt_claims() == "admin" and body.get('role') in ['admin', 'super_admin']:
+                raise PermissionError
+            user = Users(**body)
+            user.hash_pass()
+            user.save()
             id = user.id
             return {'id':str(id)}, "200"
+        except PermissionError:
+            raise PermissionError
         except (FieldDoesNotExist, ValidationError):
             raise SchemaValidationError
         except NotUniqueError:
             raise EmailAlreadyExistsError
-        except Exception as e:
+        except Exception:
             raise InternalServerError 
 
 class UserApi(Resource):
     @jwt_required
     def get(self, id):
         try:
-            if get_jwt_claims() != "admin":
+            if get_jwt_claims() not in  ["admin", "super_admin"]:
                 raise PermissionError
             user =  Users.objects.get( id = id).to_json()
+            if not user:
+                raise EmailNotExistsError
             return Response(user, mimetype = "application/json", status= 200)
-        except DoesNotExist:
+        
+        except (DoesNotExist, EmailNotExistsError):
             raise EmailNotExistsError
         except Exception:
             raise InternalServerError
     @jwt_required
     def put(self, id):
         try:
-            if get_jwt_claims() != "admin":
+            if get_jwt_claims() not in  ["admin", "super_admin"]:
                 raise PermissionError
             body = request.get_json()
-            Users.objects.get( id = id).update(**body)
+            if body.get('role') and get_jwt_claims()!= "super_admin":
+                raise PermissionError
+            user = Users.objects.get( id = id).update(**body)
+            id = str(user.id)
             return {"id":id}, 200
         except InvalidQueryError:
             raise SchemaValidationError
@@ -61,9 +75,13 @@ class UserApi(Resource):
     @jwt_required
     def delete(self, id):
         try:
-            if get_jwt_claims() != "admin":
+            if get_jwt_claims() not in  ["admin", "super_admin"]:
                 raise PermissionError
-            Users.objects.get( id = id).delete()
+            user = Users.objects.get( id = id)
+            if user.role and get_jwt_claims() != "super_admin":
+                raise PermissionError
+            id = str(user.id)
+            user.delete()
             return {"id":id}, 200
         except DoesNotExist:
             raise EmailNotExistsError
